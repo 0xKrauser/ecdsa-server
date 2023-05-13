@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const port = process.env.SERVER_PORT || 3042;
+const port = process.env.PORT || 3042;
 
 const { secp256k1 } = require("ethereum-cryptography/secp256k1");
 const { utf8ToBytes, toHex } = require("ethereum-cryptography/utils");

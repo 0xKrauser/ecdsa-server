@@ -35,7 +35,7 @@ app.get("/nonce/:address", (req, res) => {
 });
 
 app.get("/addresses/", (req, res) => {
-	res.send({ addresses: Object.keys(balances) });
+	res.send({ balances });
 });
 
 const seed = (sender, signature, message) => {
@@ -73,8 +73,8 @@ const seed = (sender, signature, message) => {
 };
 
 const send = (sender, signature, message) => {
-	const [nonce, transfer] = message.split(`(`)[1].split(`)`)[0];
-	const [recipient, amount] = transfer.split(`_`);
+	const [messageNonce, transfer] = message.split(`(`)[1].split(`)`);
+	const [_, recipient, amount] = transfer.split(`_`);
 	const sig = new secp256k1.Signature(
 		BigInt(signature.r),
 		BigInt(signature.s)
@@ -82,13 +82,12 @@ const send = (sender, signature, message) => {
 
 	const signer = sig.recoverPublicKey(keccak256(utf8ToBytes(message)));
 	const signerAddress = `0x${deriveAddress(signer.toRawBytes(false))}`;
-
 	if (signerAddress !== sender) {
 		return "Invalid signature";
 	}
 
 	if (
-		messageNonce !== nonces[signerAddress] &&
+		+messageNonce !== nonces[signerAddress] &&
 		!(!(signerAddress in nonces) && messageNonce === "0")
 	) {
 		return "Invalid nonce";
@@ -99,12 +98,11 @@ const send = (sender, signature, message) => {
 	} else {
 		nonces[sender]++;
 	}
-
-	if (!balances[sender] || balances[sender] < amount) {
+	if (!balances[sender] || balances[sender] < +amount) {
 		return "Not enough funds!";
 	} else {
-		balances[sender] -= amount;
-		balances[recipient] += amount;
+		balances[sender] -= +amount;
+		balances[recipient] += +amount;
 		return "OK";
 	}
 };

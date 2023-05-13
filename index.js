@@ -34,6 +34,10 @@ app.get("/nonce/:address", (req, res) => {
 	res.send({ nonce });
 });
 
+app.get("/addresses/", (req, res) => {
+	res.send({ addresses: Object.keys(balances) });
+});
+
 const seed = (sender, signature, message) => {
 	const messageNonce = message.split(`(`)[1].split(`)`)[0];
 	const sig = new secp256k1.Signature(
